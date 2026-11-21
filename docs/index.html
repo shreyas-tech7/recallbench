@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>recallbench results</title>
+<style>
+:root { --bg:#ffffff; --fg:#1b1f24; --muted:#57606a; --line:#d0d7de; --head:#f6f8fa; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#9aa4ae; --line:#30363d; --head:#161b22; } }
+body { background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, sans-serif; margin:0 auto; max-width:1100px; padding:24px 16px; }
+table { border-collapse:collapse; width:100%; margin:12px 0 28px; font-size:13px; display:block; overflow-x:auto; }
+th, td { border:1px solid var(--line); padding:6px 8px; text-align:left; white-space:nowrap; }
+th { background:var(--head); }
+p.meta { color:var(--muted); }
+</style>
+</head>
+<body>
+<h1 id="top">recallbench results</h1>
+<p class="meta">Run of 2026-11-21, model: none (deterministic reader, scripted summarizer, hash-512 embedder), seed 4049 (never used while building, tuning used seed 1), budget 512 tokens per answer, 20 personas, 427 sessions, 265 questions. File `results/final-seed4049.json`.</p>
+<p>Every number on this page comes from the results file. The deterministic reader and the scripted summarizer produced them. Synthetic personas only.</p>
+<h2 id="accuracy">Accuracy by question type</h2>
+<table><thead><tr><th>Strategy</th><th>Single fact</th><th>Updated fact</th><th>Multi-session</th><th>Temporal</th><th>Abstention</th><th>Forgotten</th><th>All</th></tr></thead><tbody><tr><td>full_context</td><td>45% (26 to 66)</td><td>81% (68 to 89)</td><td>46% (33 to 59)</td><td>69% (56 to 79)</td><td>100% (91 to 100)</td><td>100% (92 to 100)</td><td>75% (69 to 80)</td></tr><tr><td>rolling_summary</td><td>100% (84 to 100)</td><td>100% (93 to 100)</td><td>100% (93 to 100)</td><td>100% (94 to 100)</td><td>100% (91 to 100)</td><td>100% (92 to 100)</td><td>100% (99 to 100)</td></tr><tr><td>vector_recall</td><td>95% (76 to 99)</td><td>88% (77 to 95)</td><td>83% (70 to 91)</td><td>72% (60 to 82)</td><td>100% (91 to 100)</td><td>93% (81 to 98)</td><td>87% (82 to 90)</td></tr><tr><td>profile_store</td><td>100% (84 to 100)</td><td>100% (93 to 100)</td><td>100% (93 to 100)</td><td>100% (94 to 100)</td><td>100% (91 to 100)</td><td>100% (92 to 100)</td><td>100% (99 to 100)</td></tr><tr><td>hybrid</td><td>100% (84 to 100)</td><td>100% (93 to 100)</td><td>100% (93 to 100)</td><td>100% (94 to 100)</td><td>100% (91 to 100)</td><td>100% (92 to 100)</td><td>100% (99 to 100)</td></tr></tbody></table>
+<h2 id="forgetting">Stale facts, forgetting and cost</h2>
+<table><thead><tr><th>Strategy</th><th>Stale-fact rate</th><th>Forget violations, forgotten questions</th><th>Forget violations, any question</th><th>Deleted value given as answer</th><th>Tokens per answer (mean)</th></tr></thead><tbody><tr><td>full_context</td><td>0/52 = 0.0% (0.0 to 6.9)</td><td>14/42 = 33.3% (21.0 to 48.4)</td><td>61/265 = 23.0% (18.4 to 28.5)</td><td>0/42 = 0.0% (0.0 to 8.4)</td><td>514</td></tr><tr><td>rolling_summary</td><td>0/52 = 0.0% (0.0 to 6.9)</td><td>42/42 = 100.0% (91.6 to 100.0)</td><td>265/265 = 100.0% (98.6 to 100.0)</td><td>0/42 = 0.0% (0.0 to 8.4)</td><td>437</td></tr><tr><td>vector_recall</td><td>6/52 = 11.5% (5.4 to 23.0)</td><td>41/42 = 97.6% (87.7 to 99.6)</td><td>202/265 = 76.2% (70.7 to 81.0)</td><td>3/42 = 7.1% (2.5 to 19.0)</td><td>516</td></tr><tr><td>profile_store</td><td>0/52 = 0.0% (0.0 to 6.9)</td><td>0/42 = 0.0% (0.0 to 8.4)</td><td>0/265 = 0.0% (0.0 to 1.4)</td><td>0/42 = 0.0% (0.0 to 8.4)</td><td>61</td></tr><tr><td>hybrid</td><td>0/52 = 0.0% (0.0 to 6.9)</td><td>0/42 = 0.0% (0.0 to 8.4)</td><td>0/265 = 0.0% (0.0 to 1.4)</td><td>0/42 = 0.0% (0.0 to 8.4)</td><td>516</td></tr></tbody></table>
+<h2 id="budget">Accuracy by token budget</h2>
+<table><thead><tr><th>Strategy</th><th>All, budget 128</th><th>All, budget 256</th><th>All, budget 512</th><th>All, budget 1024</th><th>Forget violations, budget 128</th><th>Forget violations, budget 256</th><th>Forget violations, budget 512</th><th>Forget violations, budget 1024</th></tr></thead><tbody><tr><td>full_context</td><td>43% (37 to 49)</td><td>55% (49 to 61)</td><td>75% (69 to 80)</td><td>87% (83 to 91)</td><td>0% (0 to 8)</td><td>29% (17 to 44)</td><td>33% (21 to 48)</td><td>95% (84 to 99)</td></tr><tr><td>rolling_summary</td><td>57% (51 to 62)</td><td>79% (74 to 83)</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>12% (5 to 25)</td><td>86% (72 to 93)</td><td>100% (92 to 100)</td><td>100% (92 to 100)</td></tr><tr><td>vector_recall</td><td>74% (68 to 79)</td><td>82% (76 to 86)</td><td>87% (82 to 90)</td><td>94% (90 to 96)</td><td>90% (78 to 96)</td><td>93% (81 to 98)</td><td>98% (88 to 100)</td><td>100% (92 to 100)</td></tr><tr><td>profile_store</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>0% (0 to 8)</td><td>0% (0 to 8)</td><td>0% (0 to 8)</td><td>0% (0 to 8)</td></tr><tr><td>hybrid</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>0% (0 to 8)</td><td>0% (0 to 8)</td><td>0% (0 to 8)</td><td>0% (0 to 8)</td></tr></tbody></table>
+<p><a href="../README.md">Back to the README</a></p>
+</body>
+</html>
