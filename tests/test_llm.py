@@ -72,3 +72,10 @@ def test_no_key_means_no_client(monkeypatch):
 
 def test_normalize():
     assert normalize("Boise | Ramen.") == "boise | ramen"
+
+
+def test_client_refuses_other_schemes():
+    """Broken case: a file: or plain http URL to a remote host would be opened."""
+    for bad in ("file:///etc/passwd", "http://api.groq.com/openai/v1", "ftp://x"):
+        with pytest.raises(ValueError):
+            Client(bad, "k", "m")

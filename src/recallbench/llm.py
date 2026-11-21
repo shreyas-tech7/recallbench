@@ -26,6 +26,8 @@ LINE = re.compile(r"^\[(\d{4}-\d{2}-\d{2})\]\s*(.+)$")
 
 class Client:
     def __init__(self, base_url: str, key: str, model: str, timeout: float = 60):
+        if not re.match(r"^(https://|http://127\.0\.0\.1[:/])", base_url):
+            raise ValueError("base_url must be https, or http on 127.0.0.1 for tests")
         self.base_url, self.key, self.model, self.timeout = base_url.rstrip("/"), key, model, timeout
         self.calls = 0
 
@@ -40,7 +42,7 @@ class Client:
         ).encode()
         wait = 2.0
         for attempt in range(5):
-            req = urllib.request.Request(
+            req = urllib.request.Request(  # noqa: S310 (scheme checked in __init__)
                 self.base_url + "/chat/completions",
                 data=body,
                 headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.key}"},

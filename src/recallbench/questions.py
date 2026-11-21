@@ -82,7 +82,7 @@ def make_questions(p: Persona, rng: random.Random, per_type: int = 3) -> list[Qu
 
 
 def build(personas: list[Persona], seed: int) -> list[Question]:
-    rng = random.Random(seed * 7919 + 1)
+    rng = random.Random(seed * 7919 + 1)  # noqa: S311 (seeded synthetic data, not crypto)
     out = []
     for p in personas:
         out += make_questions(p, rng)

@@ -239,5 +239,5 @@ def make_persona(rng: random.Random, pid: int) -> Persona:
 
 
 def generate(seed: int, n_personas: int = 20) -> list[Persona]:
-    rng = random.Random(seed)
+    rng = random.Random(seed)  # noqa: S311 (seeded synthetic data, not crypto)
     return [make_persona(rng, i) for i in range(n_personas)]
