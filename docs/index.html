@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>recallbench results</title>
+<style>
+:root { --bg:#ffffff; --fg:#1b1f24; --muted:#57606a; --line:#d0d7de; --head:#f6f8fa; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#9aa4ae; --line:#30363d; --head:#161b22; } }
+body { background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, sans-serif; margin:0 auto; max-width:1100px; padding:24px 16px; }
+table { border-collapse:collapse; width:100%; margin:12px 0 28px; font-size:13px; display:block; overflow-x:auto; }
+th, td { border:1px solid var(--line); padding:6px 8px; text-align:left; white-space:nowrap; }
+th { background:var(--head); }
+p.meta { color:var(--muted); }
+</style>
+</head>
+<body>
+<h1 id="top">recallbench results</h1>
+<p class="meta">Run of 2026-11-21, model: none (deterministic reader, scripted summarizer, hash-512 embedder), seed 2027 (never used while building, tuning used seed 1), budget 512 tokens per answer, 20 personas, 379 sessions, 264 questions. File `results/final-seed2027.json`.</p>
+<p>Every number on this page comes from the results file. The deterministic reader and the scripted summarizer produced them. Synthetic personas only.</p>
+<h2 id="accuracy">Accuracy by question type</h2>
+<table><thead><tr><th>Strategy</th><th>Single fact</th><th>Updated fact</th><th>Multi-session</th><th>Temporal</th><th>Abstention</th><th>Forgotten</th><th>All</th></tr></thead><tbody><tr><td>full_context</td><td>38% (22 to 57)</td><td>51% (37 to 65)</td><td>20% (11 to 32)</td><td>22% (13 to 34)</td><td>100% (91 to 100)</td><td>100% (91 to 100)</td><td>52% (46 to 58)</td></tr><tr><td>rolling_summary</td><td>100% (87 to 100)</td><td>100% (92 to 100)</td><td>100% (93 to 100)</td><td>100% (94 to 100)</td><td>100% (91 to 100)</td><td>100% (91 to 100)</td><td>100% (99 to 100)</td></tr><tr><td>vector_recall</td><td>77% (58 to 89)</td><td>91% (80 to 97)</td><td>63% (49 to 75)</td><td>98% (91 to 100)</td><td>100% (91 to 100)</td><td>95% (84 to 99)</td><td>88% (83 to 91)</td></tr><tr><td>profile_store</td><td>100% (87 to 100)</td><td>100% (92 to 100)</td><td>100% (93 to 100)</td><td>100% (94 to 100)</td><td>100% (91 to 100)</td><td>100% (91 to 100)</td><td>100% (99 to 100)</td></tr><tr><td>hybrid</td><td>100% (87 to 100)</td><td>100% (92 to 100)</td><td>100% (93 to 100)</td><td>100% (94 to 100)</td><td>100% (91 to 100)</td><td>100% (91 to 100)</td><td>100% (99 to 100)</td></tr></tbody></table>
+<h2 id="forgetting">Stale facts, forgetting and cost</h2>
+<table><thead><tr><th>Strategy</th><th>Stale-fact rate</th><th>Forget violations (deleted value returned)</th><th>Deleted value given as answer</th><th>Tokens per answer (mean)</th></tr></thead><tbody><tr><td>full_context</td><td>0/47 = 0.0% (0.0 to 7.6)</td><td>5/41 = 12.2% (5.3 to 25.5)</td><td>0/41 = 0.0% (0.0 to 8.6)</td><td>517</td></tr><tr><td>rolling_summary</td><td>0/47 = 0.0% (0.0 to 7.6)</td><td>41/41 = 100.0% (91.4 to 100.0)</td><td>0/41 = 0.0% (0.0 to 8.6)</td><td>389</td></tr><tr><td>vector_recall</td><td>4/47 = 8.5% (3.4 to 19.9)</td><td>41/41 = 100.0% (91.4 to 100.0)</td><td>2/41 = 4.9% (1.3 to 16.1)</td><td>160</td></tr><tr><td>profile_store</td><td>0/47 = 0.0% (0.0 to 7.6)</td><td>0/41 = 0.0% (0.0 to 8.6)</td><td>0/41 = 0.0% (0.0 to 8.6)</td><td>64</td></tr><tr><td>hybrid</td><td>0/47 = 0.0% (0.0 to 7.6)</td><td>0/41 = 0.0% (0.0 to 8.6)</td><td>0/41 = 0.0% (0.0 to 8.6)</td><td>214</td></tr></tbody></table>
+<h2 id="budget">Accuracy by token budget</h2>
+<table><thead><tr><th>Strategy</th><th>All, budget 128</th><th>All, budget 256</th><th>All, budget 512</th><th>All, budget 1024</th><th>Forget violations, budget 128</th><th>Forget violations, budget 256</th><th>Forget violations, budget 512</th><th>Forget violations, budget 1024</th></tr></thead><tbody><tr><td>full_context</td><td>36% (31 to 42)</td><td>42% (37 to 48)</td><td>52% (46 to 58)</td><td>73% (67 to 78)</td><td>0% (0 to 9)</td><td>5% (1 to 16)</td><td>12% (5 to 26)</td><td>37% (24 to 52)</td></tr><tr><td>rolling_summary</td><td>58% (52 to 63)</td><td>86% (81 to 89)</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>10% (4 to 23)</td><td>59% (43 to 72)</td><td>100% (91 to 100)</td><td>100% (91 to 100)</td></tr><tr><td>vector_recall</td><td>86% (82 to 90)</td><td>88% (83 to 91)</td><td>88% (83 to 91)</td><td>88% (83 to 91)</td><td>100% (91 to 100)</td><td>100% (91 to 100)</td><td>100% (91 to 100)</td><td>100% (91 to 100)</td></tr><tr><td>profile_store</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>0% (0 to 9)</td><td>0% (0 to 9)</td><td>0% (0 to 9)</td><td>0% (0 to 9)</td></tr><tr><td>hybrid</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>100% (99 to 100)</td><td>0% (0 to 9)</td><td>0% (0 to 9)</td><td>0% (0 to 9)</td><td>0% (0 to 9)</td></tr></tbody></table>
+<p><a href="../README.md">Back to the README</a></p>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+ "status": "blocked",
+ "date": "2026-11-21",
+ "reason": "no GROQ_API_KEY in the environment, so no request was sent."
+}

@@ -131,6 +131,7 @@ def record_text(rec: dict) -> str:
     if rec.get("status") != "ran":
         return (
             f"Record mode did not run. Checked on {rec['date']}: {rec['reason']} "
+            "On the build machine the free provider hosts also refused the connection (see `docs/ENVIRONMENT.md`). "
             "So every number on this page comes from the deterministic reader and the scripted summarizer. "
             "The LLM summarizer and the LLM reader exist in `src/recallbench/llm.py` and pass their tests against a fake local server."
         )
@@ -185,7 +186,7 @@ def blocks(root: Path) -> dict[str, str]:
                 f"The most expensive is `{worst_tokens}` at {s[worst_tokens]['tokens_per_answer']['mean']:.0f} tokens.",
                 f"For 1,000 answers that is {s[best_tokens]['tokens_per_answer']['mean']:.0f}k against "
                 f"{s[worst_tokens]['tokens_per_answer']['mean']:.0f}k input tokens for an LLM reader.",
-                f"The deterministic reader costs no tokens. The full benchmark (5 strategies, 5 budgets) took "
+                f"The deterministic reader costs no tokens. The main run plus the budget sweep (5 strategies at 5 budget settings) took "
                 f"{m['seconds']:.1f} seconds on one core of `{m['cpu']}` on {m['date']}.",
             ]
         ),

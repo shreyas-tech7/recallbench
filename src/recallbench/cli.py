@@ -92,7 +92,7 @@ def cmd_demo(a) -> int:
 
 
 def cmd_record(a) -> int:
-    from .llm import from_env
+    from .llm import PROVIDERS, from_env
     from .record import record
 
     client = from_env(a.provider)
@@ -101,7 +101,7 @@ def cmd_record(a) -> int:
         status = {
             "status": "blocked",
             "date": date.today().isoformat(),
-            "reason": f"no {a.provider} key in the environment and the provider host refused the connection from this machine.",
+            "reason": f"no {PROVIDERS[a.provider][1]} in the environment, so no request was sent.",
         }
         out.write_text(json.dumps(status, indent=1) + "\n")
         print(f"record mode blocked: {status['reason']} Wrote {out}.")
