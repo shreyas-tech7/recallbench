@@ -14,7 +14,7 @@ Compare five memory strategies on synthetic multi-session chats. Score six quest
 6. Vector recall with the hash embedder, then FastEmbed. Test: vector recall keeps deleted values (so violations show).
 7. Rolling summary (scripted) and the hybrid. Test: the hybrid removes deleted values from its index.
 8. Metrics and report (`bench.py`, `readme.py`). Tests: Wilson values, stale and forget flags, README blocks match the results.
-9. Final run on seed 2027, second run on seed 31337.
+9. Final run on seed 4049, second run on seed 90210. (Seeds 2027 and 31337 ran first and were retired after the code review changed the strategies. See DECISIONS.md.)
 10. Record mode, or the README says it could not run.
 11. README, decision guide, study-later kit, release check, hand-off.
 

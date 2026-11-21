@@ -33,8 +33,8 @@ The generator invents users and their chats. Each memory strategy reads the chat
 
 ## Results and docs
 
-- `results/final-seed2027.json` holds the headline numbers.
-- `results/second-seed31337.json` is the rerun on a second fresh seed.
+- `results/final-seed4049.json` holds the headline numbers.
+- `results/second-seed90210.json` is the rerun on a second fresh seed.
 - `results/tune-seed1.json` is the seed used while building.
 - `results/record-status.json` says why record mode did not run.
 - `docs/DECISION_GUIDE.md` helps a team pick a strategy.

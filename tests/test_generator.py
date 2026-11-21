@@ -1,3 +1,4 @@
+import re
 from collections import Counter
 
 from recallbench.generator import DISTRACT, SLOTS, generate
@@ -54,3 +55,15 @@ def test_all_six_question_types():
     counts = Counter(q.qtype for q in qs)
     assert set(counts) == set(TYPES)
     assert all(n >= 20 for n in counts.values()), counts
+
+
+def test_temporal_questions_name_no_value():
+    """Broken case: a temporal question that holds the value gives retrieval a word to match on."""
+    from recallbench.questions import build
+
+    personas = generate(1, 5)
+    values = {e.value for p in personas for e in p.events if e.value}
+    temporal = [q for q in build(personas, 1) if q.qtype == "temporal"]
+    assert temporal
+    for q in temporal:
+        assert not any(re.search(rf"\b{re.escape(v)}\b", q.text) for v in values), q.text

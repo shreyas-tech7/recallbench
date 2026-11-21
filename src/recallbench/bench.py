@@ -11,13 +11,14 @@ from pathlib import Path
 
 from . import __version__
 from .generator import generate
-from .questions import TYPES, UNKNOWN, Question, build
+from .questions import TYPES, Question, build
 from .reader import answer
 from .strategies import NAMES, count_tokens, make
 
-TUNE_SEED = 1  # the only seed used while building
+TUNE_SEED = 1  # the only seed used while tuning
+BUILD_SEEDS = {1, 2, 3}  # the tuning seed plus the seeds the tests use
 BUDGET = 512
-SWEEP = [128, 256, 512, 1024]
+SWEEP = [128, 256, 1024]  # plus BUDGET, which reuses the main run
 
 
 def wilson(k: int, n: int, z: float = 1.96) -> dict:
@@ -36,15 +37,17 @@ def _named(values: list[str], lines: list[str]) -> bool:
     return any(re.search(rf"\b{re.escape(v)}\b", text) for v in values)
 
 
-def score(q: Question, lines: list[str]) -> dict:
-    got = answer(q.text, lines)
+def score(q: Question, lines: list[str], got: str | None = None) -> dict:
+    """Score one answer. `got` defaults to the deterministic reader's answer."""
+    got = answer(q.text, lines) if got is None else got
     return {
         "qid": q.qid,
         "qtype": q.qtype,
         "answer": got,
         "correct": got == q.answer,
         "stale": q.qtype == "updated" and got in q.old_values,
-        "forget_violation": bool(q.deleted_values) and _named(q.deleted_values, lines),
+        # Any returned line that names any value this persona asked to forget, whatever the question.
+        "forget_violation": bool(q.forgotten) and _named(q.forgotten, lines),
         "forget_answer_leak": bool(q.deleted_values) and got in q.deleted_values,
         "tokens": count_tokens("\n".join(lines)) + count_tokens(q.text),
     }
@@ -74,6 +77,7 @@ def aggregate(rows: list[dict]) -> dict:
     out["stale_rate"] = wilson(sum(r["stale"] for r in upd), len(upd))
     gone = [r for r in rows if r["qtype"] == "forgotten"]
     out["forget_violations"] = wilson(sum(r["forget_violation"] for r in gone), len(gone))
+    out["forget_violations_all"] = wilson(sum(r["forget_violation"] for r in rows), len(rows))
     out["forget_answer_leaks"] = wilson(sum(r["forget_answer_leak"] for r in gone), len(gone))
     toks = [r["tokens"] for r in rows]
     out["tokens_per_answer"] = {"mean": sum(toks) / len(toks), "max": max(toks)}
@@ -119,10 +123,13 @@ def run(seed: int, budget: int = BUDGET, embedder=None, sweep: bool = True, n_pe
     for name in NAMES:
         res["strategies"][name] = aggregate(run_strategy(name, personas, questions, budget, embedder))
     if sweep:
-        for b in SWEEP:
+        for b in sorted(set(SWEEP) | {budget}):
             res["sweep"][str(b)] = {}
             for name in NAMES:
-                agg = aggregate(run_strategy(name, personas, questions, b, embedder))
+                if b == budget:
+                    agg = res["strategies"][name]  # the main run, not a second copy of it
+                else:
+                    agg = aggregate(run_strategy(name, personas, questions, b, embedder))
                 res["sweep"][str(b)][name] = {
                     "overall": agg["overall"],
                     "forget_violations": agg["forget_violations"],
@@ -143,4 +150,4 @@ def ground_truth_check(seed: int, n_personas: int = 20) -> list[str]:
     return bad
 
 
-__all__ = ["run", "ground_truth_check", "wilson", "UNKNOWN"]
+__all__ = ["run", "ground_truth_check", "wilson", "score", "aggregate"]

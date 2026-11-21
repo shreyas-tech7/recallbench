@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-import re
+from dataclasses import replace
 from datetime import date
 
-from .bench import aggregate
+from .bench import aggregate, score
 from .generator import generate
 from .llm import Client, llm_answer, llm_summarizer, normalize
 from .questions import build
-from .strategies import ProfileStore, RollingSummary, count_tokens
+from .strategies import ProfileStore, RollingSummary
 
 
 def record(client: Client, seed: int, n_personas: int = 3, budget: int = 512) -> dict:
@@ -40,19 +40,14 @@ def record(client: Client, seed: int, n_personas: int = 3, budget: int = 512) ->
             for q in (q for q in questions if q.pid == p.pid):
                 lines = strat.retrieve(q.text, q.date)
                 got = normalize(llm_answer(client, q.text, lines))
-                text = "\n".join(lines)
-                rows.append(
-                    {
-                        "qtype": q.qtype,
-                        "correct": got == normalize(q.answer),
-                        "stale": q.qtype == "updated" and got in {normalize(v) for v in q.old_values},
-                        "forget_violation": any(
-                            re.search(rf"\b{re.escape(v)}\b", text) for v in q.deleted_values
-                        ),
-                        "forget_answer_leak": got in {normalize(v) for v in q.deleted_values},
-                        "tokens": count_tokens(text) + count_tokens(q.text),
-                    }
+                # Same scoring as the main run, with the model's answer and lowercased keys.
+                key = replace(
+                    q,
+                    answer=normalize(q.answer),
+                    old_values=[normalize(v) for v in q.old_values],
+                    deleted_values=[normalize(v) for v in q.deleted_values],
                 )
+                rows.append(score(key, lines, got))
         out["strategies"][name] = aggregate(rows)
     out["meta"]["calls"] = client.calls
     return out

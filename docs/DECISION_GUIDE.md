@@ -5,21 +5,21 @@ This guide is for a team that adds memory to an assistant. Every number in it co
 ## The numbers
 
 <!-- gen:guide -->
-| Strategy | Stale-fact rate | Forget violations (deleted value returned) | Deleted value given as answer | Tokens per answer (mean) |
-| --- | --- | --- | --- | --- |
-| `full_context` | 0/47 = 0.0% (0.0 to 7.6) | 5/41 = 12.2% (5.3 to 25.5) | 0/41 = 0.0% (0.0 to 8.6) | 517 |
-| `rolling_summary` | 0/47 = 0.0% (0.0 to 7.6) | 41/41 = 100.0% (91.4 to 100.0) | 0/41 = 0.0% (0.0 to 8.6) | 389 |
-| `vector_recall` | 4/47 = 8.5% (3.4 to 19.9) | 41/41 = 100.0% (91.4 to 100.0) | 2/41 = 4.9% (1.3 to 16.1) | 160 |
-| `profile_store` | 0/47 = 0.0% (0.0 to 7.6) | 0/41 = 0.0% (0.0 to 8.6) | 0/41 = 0.0% (0.0 to 8.6) | 64 |
-| `hybrid` | 0/47 = 0.0% (0.0 to 7.6) | 0/41 = 0.0% (0.0 to 8.6) | 0/41 = 0.0% (0.0 to 8.6) | 214 |
+| Strategy | Stale-fact rate | Forget violations, forgotten questions | Forget violations, any question | Deleted value given as answer | Tokens per answer (mean) |
+| --- | --- | --- | --- | --- | --- |
+| `full_context` | 0/52 = 0.0% (0.0 to 6.9) | 14/42 = 33.3% (21.0 to 48.4) | 61/265 = 23.0% (18.4 to 28.5) | 0/42 = 0.0% (0.0 to 8.4) | 514 |
+| `rolling_summary` | 0/52 = 0.0% (0.0 to 6.9) | 42/42 = 100.0% (91.6 to 100.0) | 265/265 = 100.0% (98.6 to 100.0) | 0/42 = 0.0% (0.0 to 8.4) | 437 |
+| `vector_recall` | 6/52 = 11.5% (5.4 to 23.0) | 41/42 = 97.6% (87.7 to 99.6) | 202/265 = 76.2% (70.7 to 81.0) | 3/42 = 7.1% (2.5 to 19.0) | 516 |
+| `profile_store` | 0/52 = 0.0% (0.0 to 6.9) | 0/42 = 0.0% (0.0 to 8.4) | 0/265 = 0.0% (0.0 to 1.4) | 0/42 = 0.0% (0.0 to 8.4) | 61 |
+| `hybrid` | 0/52 = 0.0% (0.0 to 6.9) | 0/42 = 0.0% (0.0 to 8.4) | 0/265 = 0.0% (0.0 to 1.4) | 0/42 = 0.0% (0.0 to 8.4) | 516 |
 
 | Strategy | All, budget 128 | All, budget 256 | All, budget 512 | All, budget 1024 | Forget violations, budget 128 | Forget violations, budget 256 | Forget violations, budget 512 | Forget violations, budget 1024 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `full_context` | 36% (31 to 42) | 42% (37 to 48) | 52% (46 to 58) | 73% (67 to 78) | 0% (0 to 9) | 5% (1 to 16) | 12% (5 to 26) | 37% (24 to 52) |
-| `rolling_summary` | 58% (52 to 63) | 86% (81 to 89) | 100% (99 to 100) | 100% (99 to 100) | 10% (4 to 23) | 59% (43 to 72) | 100% (91 to 100) | 100% (91 to 100) |
-| `vector_recall` | 86% (82 to 90) | 88% (83 to 91) | 88% (83 to 91) | 88% (83 to 91) | 100% (91 to 100) | 100% (91 to 100) | 100% (91 to 100) | 100% (91 to 100) |
-| `profile_store` | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 0% (0 to 9) | 0% (0 to 9) | 0% (0 to 9) | 0% (0 to 9) |
-| `hybrid` | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 0% (0 to 9) | 0% (0 to 9) | 0% (0 to 9) | 0% (0 to 9) |
+| `full_context` | 43% (37 to 49) | 55% (49 to 61) | 75% (69 to 80) | 87% (83 to 91) | 0% (0 to 8) | 29% (17 to 44) | 33% (21 to 48) | 95% (84 to 99) |
+| `rolling_summary` | 57% (51 to 62) | 79% (74 to 83) | 100% (99 to 100) | 100% (99 to 100) | 12% (5 to 25) | 86% (72 to 93) | 100% (92 to 100) | 100% (92 to 100) |
+| `vector_recall` | 74% (68 to 79) | 82% (76 to 86) | 87% (82 to 90) | 94% (90 to 96) | 90% (78 to 96) | 93% (81 to 98) | 98% (88 to 100) | 100% (92 to 100) |
+| `profile_store` | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 0% (0 to 8) | 0% (0 to 8) | 0% (0 to 8) | 0% (0 to 8) |
+| `hybrid` | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 0% (0 to 8) | 0% (0 to 8) | 0% (0 to 8) | 0% (0 to 8) |
 <!-- /gen:guide -->
 
 ## How to read them
@@ -27,7 +27,7 @@ This guide is for a team that adds memory to an assistant. Every number in it co
 1. **Start with forgetting.** If users can ask you to forget things, look at the forget violation column first. A strategy that keeps raw text (full context, a rolling summary that never rewrites, plain vector recall) keeps deleted values. A store that deletes by key does not. Your reader may skip a deleted value, but the value is still in the prompt, in the logs and in any cache.
 2. **Then updates.** Look at the stale-fact rate. Vector recall ranks by similarity, not by date. When the newest statement uses different words from the question ("We moved to Boise" against "Which city do I live in?"), it can lose to an older line.
 3. **Then cost.** Tokens per answer is what an LLM reader pays on every question. A profile store sends a few short lines. Full context sends the whole budget every time.
-4. **Then the budget sweep.** Full context and the rolling summary depend on the budget. A profile store barely does. If your budget is tight, that row matters most.
+4. **Then the budget sweep.** Full context, the rolling summary and vector recall depend on the budget. A profile store barely does. If your budget is tight, that row matters most.
 
 ## A short rule set
 

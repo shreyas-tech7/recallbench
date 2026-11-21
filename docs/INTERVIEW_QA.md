@@ -36,11 +36,11 @@ It uses the same rule extractor as the reader. In this benchmark, extraction nev
 
 **9. What does a forget violation count?**
 
-A question about a deleted fact where any returned line names a deleted value as a whole word (`_named` in `bench.py`). A second count, deleted value given as answer, shows when the reader also used it.
+A question where any returned line names, as a whole word, any value the persona asked to forget (`_named` in `bench.py`). The README reports it on forgotten-fact questions and on every question, because a deleted city can leak into an answer about the hobby. A second count, deleted value given as answer, shows when the reader also used it.
 
 **10. How do you stop a strategy from cheating?**
 
-Three guards. Strategies only get sessions during ingestion, and `test_strategies_never_see_questions_during_ingestion` checks both the argument type and that no question text sits in the stored memory. The final numbers use seed 2027, which no run touched while building. And the CLI refuses to write a final file from the tuning seed.
+Three guards. Strategies only get sessions during ingestion, and `test_strategies_never_see_questions_during_ingestion` checks both the argument type and that no question text sits in the stored memory. The final numbers use seed 4049, which no run touched while building. And the CLI refuses to write a final or second file from any seed used while building (1 to 3).
 
 **11. Why Wilson intervals?**
 
@@ -48,7 +48,7 @@ Many rates sit at or near 0 or 1, where the plain normal interval breaks. Wilson
 
 **12. What did you learn from the budget sweep?**
 
-Strategies that keep raw text depend on the budget. Full context climbs as the budget grows. The rolling summary only drops lines by age, so a small budget hides deleted values by accident and a large one keeps them. The profile store barely changes. See the sweep table in the README.
+Strategies that keep raw text depend on the budget. Full context and vector recall climb as the budget grows. The rolling summary only drops lines by age, so a small budget hides deleted values by accident and a large one keeps them. The profile store barely changes. See the sweep table in the README.
 
 **13. Why does the rolling summary leak deleted facts?**
 
@@ -65,10 +65,11 @@ Dense embeddings and record mode. The build machine could not reach Hugging Face
 ## Numbers used above
 
 <!-- gen:qa_numbers -->
-From `results/final-seed2027.json` (seed 2027, budget 512):
-`vector_recall` forget violations: 41/41 = 100.0% (91.4 to 100.0).
-`rolling_summary` forget violations: 41/41 = 100.0% (91.4 to 100.0).
-`vector_recall` stale-fact rate: 4/47 = 8.5% (3.4 to 19.9).
-`full_context` multi-session accuracy: 10/51 = 19.6% (11.0 to 32.5).
-Tokens per answer: `profile_store` 64, `full_context` 517.
+From `results/final-seed4049.json` (seed 4049, budget 512):
+`vector_recall` forget violations: 41/42 = 97.6% (87.7 to 99.6).
+`rolling_summary` forget violations: 42/42 = 100.0% (91.6 to 100.0).
+`vector_recall` forget violations across every question: 202/265 = 76.2% (70.7 to 81.0).
+`vector_recall` stale-fact rate: 6/52 = 11.5% (5.4 to 23.0).
+`full_context` multi-session accuracy: 24/52 = 46.2% (33.3 to 59.5).
+Tokens per answer: `profile_store` 61, `full_context` 514.
 <!-- /gen:qa_numbers -->

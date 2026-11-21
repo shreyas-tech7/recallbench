@@ -11,6 +11,8 @@ def test_truth_command(capsys):
 def test_run_refuses_tune_seed_for_final(tmp_path):
     """Broken case: final numbers produced from the seed used while building."""
     assert main(["run", "--seed", "1", "--out", str(tmp_path / "final-seed1.json")]) == 2
+    assert main(["run", "--seed", "1", "--out", str(tmp_path / "FINAL.json")]) == 2
+    assert main(["run", "--seed", "2", "--out", str(tmp_path / "second-seed2.json")]) == 2
 
 
 def test_run_writes_results(tmp_path):

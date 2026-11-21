@@ -34,6 +34,7 @@ def server():
     Fake.replies, Fake.seen = [], []
     yield f"http://127.0.0.1:{srv.server_address[1]}/v1"
     srv.shutdown()
+    srv.server_close()
 
 
 def test_client_sends_key_and_reads_reply(server):

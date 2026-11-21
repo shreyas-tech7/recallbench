@@ -11,11 +11,12 @@ import json
 import re
 from pathlib import Path
 
+from .bench import BUILD_SEEDS
 from .questions import TYPES
 from .strategies import NAMES
 
-FINAL = "results/final-seed2027.json"
-SECOND = "results/second-seed31337.json"
+FINAL = "results/final-seed4049.json"
+SECOND = "results/second-seed90210.json"
 TUNE = "results/tune-seed1.json"
 RECORD = "results/record-status.json"
 FILES = ["README.md", "docs/DECISION_GUIDE.md", "docs/INTERVIEW_QA.md"]
@@ -50,8 +51,9 @@ def _table(head: list[str], rows: list[list[str]]) -> list[str]:
 
 def meta_line(res: dict, rel: str) -> str:
     m = res["meta"]
+    used = "used while building" if m["seed"] in BUILD_SEEDS else "never used while building"
     return (
-        f"Run of {m['date']}, model: {m['model']}, seed {m['seed']} (never used while building, "
+        f"Run of {m['date']}, model: {m['model']}, seed {m['seed']} ({used}, "
         f"tuning used seed {m['tune_seed']}), budget {m['budget_tokens']} tokens per answer, "
         f"{m['personas']} personas, {m['sessions']} sessions, {m['questions']} questions. File `{rel}`."
     )
@@ -70,7 +72,8 @@ def risk_table(res: dict) -> list[str]:
     head = [
         "Strategy",
         "Stale-fact rate",
-        "Forget violations (deleted value returned)",
+        "Forget violations, forgotten questions",
+        "Forget violations, any question",
         "Deleted value given as answer",
         "Tokens per answer (mean)",
     ]
@@ -82,6 +85,7 @@ def risk_table(res: dict) -> list[str]:
                 f"`{name}`",
                 pct(s["stale_rate"]),
                 pct(s["forget_violations"]),
+                pct(s["forget_violations_all"]),
                 pct(s["forget_answer_leaks"]),
                 f"{s['tokens_per_answer']['mean']:.0f}",
             ]
@@ -167,7 +171,9 @@ def blocks(root: Path) -> dict[str, str]:
         "second": "\n".join(
             [
                 f"Some rows reach {100 * max(s[n]['overall']['rate'] for n in NAMES):.0f}%, which looks too good. "
-                f"So the same run went again on seed {second['meta']['seed']} (file `{SECOND}`).",
+                f"So the same run went again on seed {second['meta']['seed']} (file `{SECOND}`). "
+                "A second seed rules out a lucky draw. It does not remove the design reason: "
+                "the profile store and the scripted summarizer share the generator's phrasing (see Limits).",
                 "",
                 *compare_table(final, second),
             ]
@@ -186,7 +192,8 @@ def blocks(root: Path) -> dict[str, str]:
                 f"The most expensive is `{worst_tokens}` at {s[worst_tokens]['tokens_per_answer']['mean']:.0f} tokens.",
                 f"For 1,000 answers that is {s[best_tokens]['tokens_per_answer']['mean']:.0f}k against "
                 f"{s[worst_tokens]['tokens_per_answer']['mean']:.0f}k input tokens for an LLM reader.",
-                f"The deterministic reader costs no tokens. The main run plus the budget sweep (5 strategies at 5 budget settings) took "
+                f"The deterministic reader costs no tokens. The main run plus the budget sweep "
+                f"({len(NAMES)} strategies at {len(final['sweep'])} budgets, the {m['budget_tokens']}-token row reused from the main run) took "
                 f"{m['seconds']:.1f} seconds on one core of `{m['cpu']}` on {m['date']}.",
             ]
         ),
@@ -196,6 +203,7 @@ def blocks(root: Path) -> dict[str, str]:
                 f"From `{FINAL}` (seed {m['seed']}, budget {m['budget_tokens']}):",
                 f"`vector_recall` forget violations: {pct(s['vector_recall']['forget_violations'])}.",
                 f"`rolling_summary` forget violations: {pct(s['rolling_summary']['forget_violations'])}.",
+                f"`vector_recall` forget violations across every question: {pct(s['vector_recall']['forget_violations_all'])}.",
                 f"`vector_recall` stale-fact rate: {pct(s['vector_recall']['stale_rate'])}.",
                 f"`full_context` multi-session accuracy: {pct(s['full_context']['by_type']['multi_session'])}.",
                 f"Tokens per answer: `profile_store` {s['profile_store']['tokens_per_answer']['mean']:.0f}, "

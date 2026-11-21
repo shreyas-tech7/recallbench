@@ -121,3 +121,44 @@ def test_runner_scores_every_question():
     qs = build(personas, 1)
     rows = run_strategy("full_context", personas, qs, 512)
     assert len(rows) == len(qs)
+
+
+def test_full_context_window_has_no_gaps():
+    """Broken case: a newer turn that does not fit is skipped and an older, shorter one is
+    taken instead, so an update or a forget request can drop out while the old value stays."""
+    from recallbench.generator import Turn
+    from recallbench.strategies import FullContext
+
+    fc = FullContext(budget=12)
+    fc.ingest(Session(0, "2025-01-01", [Turn("user", "I live in Omaha.")]))
+    fc.ingest(
+        Session(1, "2025-01-02", [Turn("user", "We moved to Boise, a long way from home, last spring.")])
+    )
+    fc.ingest(Session(2, "2025-01-03", [Turn("user", "Hi.")]))
+    lines = fc.retrieve("Which city do I live in?", "2025-01-04")
+    assert lines == ["[2025-01-03] Hi."]
+
+
+def test_full_context_keeps_no_assistant_text():
+    """Broken case: assistant filler and role prefixes spend the full-context budget."""
+    p = generate(1, 1)[0]
+    fc = make("full_context", 512)
+    for s in p.sessions:
+        fc.ingest(s)
+    replies = {t.text for s in p.sessions for t in s.turns if t.role == "assistant"}
+    stored = fc.dump().splitlines()
+    assert not any(line in replies or line.startswith(("user:", "assistant:")) for line in stored)
+
+
+@pytest.mark.parametrize("name", ["vector_recall", "hybrid"])
+def test_vector_strategies_use_a_bigger_budget(name):
+    """Broken case: a fixed top k caps what vector recall returns, so the budget sweep means nothing."""
+    p = generate(1, 1)[0]
+    q = "What is my hobby?"
+    sizes = []
+    for budget in (128, 1024):
+        strat = make(name, budget)
+        for s in p.sessions:
+            strat.ingest(s)
+        sizes.append(count_tokens("\n".join(strat.retrieve(q, "2026-01-01"))))
+    assert sizes[1] > 2 * sizes[0]

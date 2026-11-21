@@ -29,7 +29,7 @@ flowchart LR
 
 1. **Generate.** A seeded generator invents 20 personas with 10 to 30 sessions each. Facts arrive (job, city, pet, favorite food, hobby, trip, address, car), change and get deleted. They also come up in passing inside small talk. Near-miss lines about other people ("My sister lives in Austin") sit in the mix. Every fact has a ground truth timeline.
 2. **Ingest.** Each strategy reads the sessions in order. It never sees a question during ingestion. A test checks that.
-3. **Ask.** Every question is asked the day after the last session. The six types are single fact, updated fact, multi-session, temporal, abstention and forgotten.
+3. **Ask.** Every question is asked the day after the last session. The six types are single fact, updated fact, multi-session, temporal, abstention and forgotten. A temporal question names the fact, never its value ("On what date did I first mention my current city?"), so it gives retrieval no word to match on.
 4. **Read.** The strategy returns dated memory lines within the token budget. The deterministic reader answers from those lines only.
 5. **Score.** The answer is compared to the timeline. The stale-fact rate and forget violations come from the same rows.
 6. **Report.** A script writes every number on this page from the results files.
@@ -38,9 +38,9 @@ The five strategies:
 
 | Strategy | What it keeps | What it returns |
 | --- | --- | --- |
-| `full_context` | the whole transcript | the newest turns that fit the budget |
+| `full_context` | every user turn | the newest user turns that fit the budget, with no gaps |
 | `rolling_summary` | user lines with a fact word, scripted summarizer | the summary, oldest lines dropped when over budget |
-| `vector_recall` | one chunk per user turn, hash embedder | the top 10 chunks by cosine similarity |
+| `vector_recall` | one chunk per user turn, hash embedder | chunks in order of cosine similarity until the budget is full |
 | `profile_store` | key and value facts in SQLite, a new value supersedes, a forget request deletes the slot and its history | every current fact as one canonical line |
 | `hybrid` | the profile store plus vector recall, a forget request also drops matching chunks | profile lines first, then chunks in the budget that is left |
 
@@ -53,57 +53,57 @@ The reader is exact on any line it gets, because its patterns were written again
 ## Results
 
 <!-- gen:results -->
-Run of 2026-11-21, model: none (deterministic reader, scripted summarizer, hash-512 embedder), seed 2027 (never used while building, tuning used seed 1), budget 512 tokens per answer, 20 personas, 379 sessions, 264 questions. File `results/final-seed2027.json`.
+Run of 2026-11-21, model: none (deterministic reader, scripted summarizer, hash-512 embedder), seed 4049 (never used while building, tuning used seed 1), budget 512 tokens per answer, 20 personas, 427 sessions, 265 questions. File `results/final-seed4049.json`.
 
 Accuracy by question type, with 95% Wilson intervals:
 
 | Strategy | Single fact | Updated fact | Multi-session | Temporal | Abstention | Forgotten | All |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `full_context` | 38% (22 to 57) | 51% (37 to 65) | 20% (11 to 32) | 22% (13 to 34) | 100% (91 to 100) | 100% (91 to 100) | 52% (46 to 58) |
-| `rolling_summary` | 100% (87 to 100) | 100% (92 to 100) | 100% (93 to 100) | 100% (94 to 100) | 100% (91 to 100) | 100% (91 to 100) | 100% (99 to 100) |
-| `vector_recall` | 77% (58 to 89) | 91% (80 to 97) | 63% (49 to 75) | 98% (91 to 100) | 100% (91 to 100) | 95% (84 to 99) | 88% (83 to 91) |
-| `profile_store` | 100% (87 to 100) | 100% (92 to 100) | 100% (93 to 100) | 100% (94 to 100) | 100% (91 to 100) | 100% (91 to 100) | 100% (99 to 100) |
-| `hybrid` | 100% (87 to 100) | 100% (92 to 100) | 100% (93 to 100) | 100% (94 to 100) | 100% (91 to 100) | 100% (91 to 100) | 100% (99 to 100) |
+| `full_context` | 45% (26 to 66) | 81% (68 to 89) | 46% (33 to 59) | 69% (56 to 79) | 100% (91 to 100) | 100% (92 to 100) | 75% (69 to 80) |
+| `rolling_summary` | 100% (84 to 100) | 100% (93 to 100) | 100% (93 to 100) | 100% (94 to 100) | 100% (91 to 100) | 100% (92 to 100) | 100% (99 to 100) |
+| `vector_recall` | 95% (76 to 99) | 88% (77 to 95) | 83% (70 to 91) | 72% (60 to 82) | 100% (91 to 100) | 93% (81 to 98) | 87% (82 to 90) |
+| `profile_store` | 100% (84 to 100) | 100% (93 to 100) | 100% (93 to 100) | 100% (94 to 100) | 100% (91 to 100) | 100% (92 to 100) | 100% (99 to 100) |
+| `hybrid` | 100% (84 to 100) | 100% (93 to 100) | 100% (93 to 100) | 100% (94 to 100) | 100% (91 to 100) | 100% (92 to 100) | 100% (99 to 100) |
 <!-- /gen:results -->
 
 Stale facts, forgetting and cost, from the same run:
 
 <!-- gen:risks -->
-| Strategy | Stale-fact rate | Forget violations (deleted value returned) | Deleted value given as answer | Tokens per answer (mean) |
-| --- | --- | --- | --- | --- |
-| `full_context` | 0/47 = 0.0% (0.0 to 7.6) | 5/41 = 12.2% (5.3 to 25.5) | 0/41 = 0.0% (0.0 to 8.6) | 517 |
-| `rolling_summary` | 0/47 = 0.0% (0.0 to 7.6) | 41/41 = 100.0% (91.4 to 100.0) | 0/41 = 0.0% (0.0 to 8.6) | 389 |
-| `vector_recall` | 4/47 = 8.5% (3.4 to 19.9) | 41/41 = 100.0% (91.4 to 100.0) | 2/41 = 4.9% (1.3 to 16.1) | 160 |
-| `profile_store` | 0/47 = 0.0% (0.0 to 7.6) | 0/41 = 0.0% (0.0 to 8.6) | 0/41 = 0.0% (0.0 to 8.6) | 64 |
-| `hybrid` | 0/47 = 0.0% (0.0 to 7.6) | 0/41 = 0.0% (0.0 to 8.6) | 0/41 = 0.0% (0.0 to 8.6) | 214 |
+| Strategy | Stale-fact rate | Forget violations, forgotten questions | Forget violations, any question | Deleted value given as answer | Tokens per answer (mean) |
+| --- | --- | --- | --- | --- | --- |
+| `full_context` | 0/52 = 0.0% (0.0 to 6.9) | 14/42 = 33.3% (21.0 to 48.4) | 61/265 = 23.0% (18.4 to 28.5) | 0/42 = 0.0% (0.0 to 8.4) | 514 |
+| `rolling_summary` | 0/52 = 0.0% (0.0 to 6.9) | 42/42 = 100.0% (91.6 to 100.0) | 265/265 = 100.0% (98.6 to 100.0) | 0/42 = 0.0% (0.0 to 8.4) | 437 |
+| `vector_recall` | 6/52 = 11.5% (5.4 to 23.0) | 41/42 = 97.6% (87.7 to 99.6) | 202/265 = 76.2% (70.7 to 81.0) | 3/42 = 7.1% (2.5 to 19.0) | 516 |
+| `profile_store` | 0/52 = 0.0% (0.0 to 6.9) | 0/42 = 0.0% (0.0 to 8.4) | 0/265 = 0.0% (0.0 to 1.4) | 0/42 = 0.0% (0.0 to 8.4) | 61 |
+| `hybrid` | 0/52 = 0.0% (0.0 to 6.9) | 0/42 = 0.0% (0.0 to 8.4) | 0/265 = 0.0% (0.0 to 1.4) | 0/42 = 0.0% (0.0 to 8.4) | 516 |
 <!-- /gen:risks -->
 
-A forget violation counts a forgotten-fact question where any returned line names a value the user asked to forget. The next column counts the cases where the reader also gave that value as the answer. The deterministic reader usually skips a deleted value because it also sees the forget request. An LLM reader may not, and the text has left the store either way.
+A forget violation counts a question where any returned line names any value the persona asked to forget, whatever the question asks about. The first column counts this on forgotten-fact questions only, and the second on every question. The next column counts the cases where the reader also gave that value as the answer. The deterministic reader usually skips a deleted value because it also sees the forget request. An LLM reader may not, and the text has left the store either way.
 
 <!-- gen:second -->
-Some rows reach 100%, which looks too good. So the same run went again on seed 31337 (file `results/second-seed31337.json`).
+Some rows reach 100%, which looks too good. So the same run went again on seed 90210 (file `results/second-seed90210.json`). A second seed rules out a lucky draw. It does not remove the design reason: the profile store and the scripted summarizer share the generator's phrasing (see Limits).
 
-| Strategy | All, seed 2027 | All, seed 31337 | Forget violations, seed 2027 | Forget violations, seed 31337 |
+| Strategy | All, seed 4049 | All, seed 90210 | Forget violations, seed 4049 | Forget violations, seed 90210 |
 | --- | --- | --- | --- | --- |
-| `full_context` | 52% (46 to 58) | 52% (46 to 58) | 12% (5 to 26) | 10% (4 to 23) |
-| `rolling_summary` | 100% (99 to 100) | 99% (97 to 100) | 100% (91 to 100) | 100% (91 to 100) |
-| `vector_recall` | 88% (83 to 91) | 86% (81 to 89) | 100% (91 to 100) | 93% (81 to 97) |
-| `profile_store` | 100% (99 to 100) | 100% (99 to 100) | 0% (0 to 9) | 0% (0 to 9) |
-| `hybrid` | 100% (99 to 100) | 100% (99 to 100) | 0% (0 to 9) | 0% (0 to 9) |
+| `full_context` | 75% (69 to 80) | 66% (60 to 71) | 33% (21 to 48) | 46% (31 to 62) |
+| `rolling_summary` | 100% (99 to 100) | 100% (99 to 100) | 100% (92 to 100) | 100% (91 to 100) |
+| `vector_recall` | 87% (82 to 90) | 89% (85 to 92) | 98% (88 to 100) | 100% (91 to 100) |
+| `profile_store` | 100% (99 to 100) | 100% (99 to 100) | 0% (0 to 8) | 0% (0 to 9) |
+| `hybrid` | 100% (99 to 100) | 100% (99 to 100) | 0% (0 to 8) | 0% (0 to 9) |
 <!-- /gen:second -->
 
 Accuracy and forget violations by token budget:
 
 <!-- gen:sweep -->
-Same seed 2027, budgets from 128 to 1024 tokens:
+Same seed 4049, budgets from 128 to 1024 tokens:
 
 | Strategy | All, budget 128 | All, budget 256 | All, budget 512 | All, budget 1024 | Forget violations, budget 128 | Forget violations, budget 256 | Forget violations, budget 512 | Forget violations, budget 1024 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `full_context` | 36% (31 to 42) | 42% (37 to 48) | 52% (46 to 58) | 73% (67 to 78) | 0% (0 to 9) | 5% (1 to 16) | 12% (5 to 26) | 37% (24 to 52) |
-| `rolling_summary` | 58% (52 to 63) | 86% (81 to 89) | 100% (99 to 100) | 100% (99 to 100) | 10% (4 to 23) | 59% (43 to 72) | 100% (91 to 100) | 100% (91 to 100) |
-| `vector_recall` | 86% (82 to 90) | 88% (83 to 91) | 88% (83 to 91) | 88% (83 to 91) | 100% (91 to 100) | 100% (91 to 100) | 100% (91 to 100) | 100% (91 to 100) |
-| `profile_store` | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 0% (0 to 9) | 0% (0 to 9) | 0% (0 to 9) | 0% (0 to 9) |
-| `hybrid` | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 0% (0 to 9) | 0% (0 to 9) | 0% (0 to 9) | 0% (0 to 9) |
+| `full_context` | 43% (37 to 49) | 55% (49 to 61) | 75% (69 to 80) | 87% (83 to 91) | 0% (0 to 8) | 29% (17 to 44) | 33% (21 to 48) | 95% (84 to 99) |
+| `rolling_summary` | 57% (51 to 62) | 79% (74 to 83) | 100% (99 to 100) | 100% (99 to 100) | 12% (5 to 25) | 86% (72 to 93) | 100% (92 to 100) | 100% (92 to 100) |
+| `vector_recall` | 74% (68 to 79) | 82% (76 to 86) | 87% (82 to 90) | 94% (90 to 96) | 90% (78 to 96) | 93% (81 to 98) | 98% (88 to 100) | 100% (92 to 100) |
+| `profile_store` | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 0% (0 to 8) | 0% (0 to 8) | 0% (0 to 8) | 0% (0 to 8) |
+| `hybrid` | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 100% (99 to 100) | 0% (0 to 8) | 0% (0 to 8) | 0% (0 to 8) | 0% (0 to 8) |
 <!-- /gen:sweep -->
 
 ### Record mode (LLM summarizer and reader)
@@ -121,10 +121,10 @@ For a short guide to picking a strategy from these numbers, read [docs/DECISION_
 ## Cost per task
 
 <!-- gen:cost -->
-Tokens per answer counts the memory lines a strategy returns plus the question (seed 2027, budget 512).
-The cheapest strategy is `profile_store` at 64 tokens. The most expensive is `full_context` at 517 tokens.
-For 1,000 answers that is 64k against 517k input tokens for an LLM reader.
-The deterministic reader costs no tokens. The main run plus the budget sweep (5 strategies at 5 budget settings) took 2.5 seconds on one core of `Intel(R) Xeon(R) Processor @ 2.30GHz` on 2026-11-21.
+Tokens per answer counts the memory lines a strategy returns plus the question (seed 4049, budget 512).
+The cheapest strategy is `profile_store` at 61 tokens. The most expensive is `hybrid` at 516 tokens.
+For 1,000 answers that is 61k against 516k input tokens for an LLM reader.
+The deterministic reader costs no tokens. The main run plus the budget sweep (5 strategies at 4 budgets, the 512-token row reused from the main run) took 3.0 seconds on one core of `Intel(R) Xeon(R) Processor @ 2.30GHz` on 2026-11-21.
 <!-- /gen:cost -->
 
 ## Run it in 10 minutes
@@ -163,11 +163,14 @@ To add a strategy, subclass `Strategy` in [src/recallbench/strategies.py](src/re
 - Every question is asked after the last session. Questions in the middle of a timeline are not covered.
 - The token count is a regex count of words and punctuation. It tracks a real tokenizer closely on plain English but is not exact.
 - Questions per type and per seed are in the tens, so the intervals are wide. Read the interval, not the point.
+- The Wilson intervals treat every question as independent. Questions from one persona share one memory, about 13 per persona, so the true intervals are somewhat wider.
+- The scripted summarizer keeps user lines that hold a fact word, and those words come from the generator's templates. So its accuracy at a large budget is also an upper bound. Its forget violations are real: it never acts on a forget request.
+- The extractor and the reader match the generator's exact phrasing. "Delete my address" with a capital D, or a fact set again after a forget, is not tested.
 
 ## Glossary
 
 - **Budget:** the most tokens a strategy may return for one question. The same for every strategy.
-- **Forget violation:** a returned line names a value that the user asked to forget.
+- **Forget violation:** a returned line names a value that the user asked to forget, on any question.
 - **Stale fact:** the answer is an old value after the user gave a new one.
 - **Abstention:** the right answer is `unknown` because the user never said it.
 - **Deterministic reader:** fixed rules that turn memory lines into an answer. No model.

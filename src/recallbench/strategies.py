@@ -27,20 +27,27 @@ def count_tokens(text: str) -> int:
     return len(TOKEN.findall(text))
 
 
-def pick(items: list[tuple[str, int, str]], budget: int) -> list[tuple[str, int, str]]:
-    """Take items in the given priority order while they fit the budget."""
+def pick(
+    items: list[tuple[str, int, str]], budget: int, contiguous: bool = False
+) -> list[tuple[str, int, str]]:
+    """Take items in the given priority order while they fit the budget.
+
+    With contiguous=True, stop at the first item that does not fit, so a window of
+    newest turns never has a gap where a newer turn was skipped."""
     out, used = [], 0
     for item in items:
         n = count_tokens(f"[{item[0]}] {item[2]}")
         if used + n <= budget:
             out.append(item)
             used += n
+        elif contiguous:
+            break
     return out
 
 
-def fit(items: list[tuple[str, int, str]], budget: int) -> list[str]:
+def fit(items: list[tuple[str, int, str]], budget: int, contiguous: bool = False) -> list[str]:
     """Pick items that fit the budget. Return them as lines in date order."""
-    return [f"[{d}] {t}" for d, _, t in sorted(pick(items, budget))]
+    return [f"[{d}] {t}" for d, _, t in sorted(pick(items, budget, contiguous))]
 
 
 def extract(text: str) -> tuple[str, str, str | None] | None:
@@ -75,7 +82,10 @@ class Strategy:
 
 
 class FullContext(Strategy):
-    """Keep the whole transcript. Return the newest turns that fit the budget."""
+    """Keep every user turn. Return the newest ones that fit the budget, with no gaps.
+
+    Assistant turns are left out, like in every other strategy, because they hold no
+    facts here and would only spend the budget."""
 
     name = "full_context"
 
@@ -85,10 +95,11 @@ class FullContext(Strategy):
 
     def ingest(self, session):
         for t in session.turns:
-            self.items.append((session.date, self._next(), f"{t.role}: {t.text}"))
+            if t.role == "user":
+                self.items.append((session.date, self._next(), t.text))
 
     def retrieve(self, question, qdate):
-        return fit(list(reversed(self.items)), self.budget)
+        return fit(list(reversed(self.items)), self.budget, contiguous=True)
 
     def dump(self):
         return "\n".join(t for _, _, t in self.items)
@@ -163,17 +174,19 @@ class FastEmbedder:
 
         self.name = model
         self.model = TextEmbedding(model)
+        self.dim = len(next(iter(self.model.embed(["probe"]))))
 
     def embed(self, texts: list[str]) -> np.ndarray:
-        return np.array(list(self.model.embed(texts))) if texts else np.zeros((0, 384))
+        return np.array(list(self.model.embed(texts))) if texts else np.zeros((0, self.dim))
 
 
 class VectorRecall(Strategy):
-    """Index each user turn as a chunk. Return the top k chunks by cosine similarity."""
+    """Index each user turn as a chunk. Return chunks in order of cosine similarity
+    until the budget is full. Pass k to cap the number of chunks."""
 
     name = "vector_recall"
 
-    def __init__(self, budget: int, embedder=None, k: int = 10):
+    def __init__(self, budget: int, embedder=None, k: int | None = None):
         super().__init__(budget)
         self.embedder = embedder or HashEmbedder()
         self.k = k
@@ -191,7 +204,7 @@ class VectorRecall(Strategy):
             return []
         q = self.embedder.embed([question])[0]
         scores = np.array(self.vecs) @ q
-        order = np.argsort(-scores, kind="stable")[: self.k]
+        order = np.argsort(-scores, kind="stable")[: self.k]  # k=None ranks every chunk
         return [self.chunks[i] for i in order]
 
     def retrieve(self, question, qdate):
@@ -269,7 +282,7 @@ class Hybrid(Strategy):
 
     name = "hybrid"
 
-    def __init__(self, budget: int, embedder=None, k: int = 10):
+    def __init__(self, budget: int, embedder=None, k: int | None = None):
         super().__init__(budget)
         self.profile = ProfileStore(budget)
         self.vector = VectorRecall(budget, embedder, k)

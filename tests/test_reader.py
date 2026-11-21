@@ -53,14 +53,13 @@ def test_temporal_and_multi_questions():
         ("2025-01-09", "My favorite food is ramen."),
         ("2025-02-01", "My address is 21 Cedar Street."),
     )
-    assert answer("On what date did I first mention that my favorite food is ramen?", lines) == "2025-01-09"
+    assert answer("On what date did I first mention my current favorite food?", lines) == "2025-01-09"
     assert (
-        answer("Did I first mention my city Omaha before or after my address 21 Cedar Street?", lines)
-        == "before"
+        answer("Did I first mention my current city before or after my current address?", lines) == "before"
     )
-    assert (
-        answer("Did I first mention my address 21 Cedar Street before or after my city Omaha?", lines)
-        == "after"
-    )
+    assert answer("Did I first mention my current address before or after my current city?", lines) == "after"
+    moved = lines + L(("2025-03-01", "We moved to Boise."))
+    assert answer("On what date did I first mention my current city?", moved) == "2025-03-01"
+    assert answer("On what date did I first mention my current car?", moved) == "unknown"
     assert answer("Which city do I live in, and what is my favorite food?", lines) == "Omaha | ramen"
     assert answer("What car do I drive?", lines) == "unknown"

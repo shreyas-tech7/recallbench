@@ -18,7 +18,14 @@ def test_score_flags_stale_and_forget():
     r = score(q, ["[2025-01-01] I live in Omaha."])
     assert not r["correct"] and r["stale"]
     f = Question(
-        "f", "p", "forgotten", "What is my hobby?", "2025-09-01", "unknown", deleted_values=["chess"]
+        "f",
+        "p",
+        "forgotten",
+        "What is my hobby?",
+        "2025-09-01",
+        "unknown",
+        deleted_values=["chess"],
+        forgotten=["chess"],
     )
     r = score(f, ["[2025-01-01] My hobby is chess.", "[2025-02-01] Forget my hobby, please."])
     assert r["correct"] and r["forget_violation"] and not r["forget_answer_leak"]
@@ -54,3 +61,14 @@ def test_aggregate_and_run_shape():
         )["overall"]["k"]
         == 1
     )
+
+
+def test_forget_violation_counts_any_question():
+    """Broken case: only the slot asked about is checked, so a deleted city returned for a
+    question about the hobby is not counted."""
+    q = Question("q", "p", "single", "What is my hobby?", "2025-09-01", "chess", forgotten=["Omaha"])
+    r = score(q, ["[2025-01-01] I live in Omaha.", "[2025-01-02] My hobby is chess."])
+    assert r["correct"] and r["forget_violation"]
+    rows = [r, score(q, ["[2025-01-02] My hobby is chess."])]
+    agg = aggregate(rows)
+    assert agg["forget_violations_all"]["k"] == 1 and agg["forget_violations_all"]["n"] == 2

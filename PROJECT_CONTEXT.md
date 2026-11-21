@@ -28,7 +28,7 @@ Python 3.11+, numpy, sqlite3, pytest, ruff. FastEmbed is an optional extra (`.[d
 - `results/`: JSON result files. `docs/`: guide, walkthrough, QA, demo page.
 
 ## Rules
-- Seed 1 is the tuning seed. Tests use seeds 1 to 3. Final seed 2027, second seed 31337.
+- Seed 1 is the tuning seed. Tests use seeds 1 to 3. Final seed 4049, second seed 90210. Seeds 2027 and 31337 are retired (see DECISIONS.md).
 - No typed numbers in README, DECISION_GUIDE or INTERVIEW_QA. Edit prose outside the `gen` blocks only.
 - Tests run offline. `tests/conftest.py` blocks network.
 - No em dashes, no dash punctuation, no semicolons in prose (a test checks).

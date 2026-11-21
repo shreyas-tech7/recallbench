@@ -26,7 +26,8 @@ class Question:
     date: str
     answer: str
     old_values: list[str] = field(default_factory=list)  # superseded values, for the stale-fact rate
-    deleted_values: list[str] = field(default_factory=list)  # values of a deleted slot
+    deleted_values: list[str] = field(default_factory=list)  # values of the deleted slot asked about
+    forgotten: list[str] = field(default_factory=list)  # every value this persona asked to forget
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -62,21 +63,21 @@ def make_questions(p: Persona, rng: random.Random, per_type: int = 3) -> list[Qu
     whens = list(live)
     for s in rng.sample(whens, min(2, len(whens))):
         e = live[s][-1]
-        add("temporal", f"On what date did I first mention that my {SLOT_WORD[s]} is {e.value}?", e.date)
-    if pairs:
+        add("temporal", f"On what date did I first mention my current {SLOT_WORD[s]}?", e.date)
+    if pairs:  # pairs come from different sessions, so their dates differ
         a, b = rng.choice(pairs)
         ea, eb = live[a][-1], live[b][-1]
-        if ea.date != eb.date:
-            text = f"Did I first mention my {SLOT_WORD[a]} {ea.value} before or after my {SLOT_WORD[b]} {eb.value}?"
-            add("temporal", text, "before" if ea.date < eb.date else "after")
+        text = f"Did I first mention my current {SLOT_WORD[a]} before or after my current {SLOT_WORD[b]}?"
+        add("temporal", text, "before" if ea.date < eb.date else "after")
     never = [s for s, ev in tl.items() if not ev]
     for s in rng.sample(never, min(per_type, len(never))):
         add("abstention", QUESTION[s] + "?", UNKNOWN)
     gone = [s for s, ev in tl.items() if ev and ev[-1].op == "delete"]
     for s in gone:
         add("forgotten", QUESTION[s] + "?", UNKNOWN, deleted=[e.value for e in tl[s] if e.value])
+    forgotten = sorted({e.value for s in gone for e in tl[s] if e.value})
     return [
-        Question(f"{p.pid}-q{i:02d}", p.pid, t, text, qdate, ans, old, dele)
+        Question(f"{p.pid}-q{i:02d}", p.pid, t, text, qdate, ans, old, dele, forgotten)
         for i, (t, text, ans, old, dele) in enumerate(qs)
     ]
 

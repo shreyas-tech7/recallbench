@@ -99,10 +99,9 @@ SLOT_WORD = {
 }
 WORD_SLOT = {w: s for s, w in SLOT_WORD.items()}
 LINE = re.compile(r"^\[(\d{4}-\d{2}-\d{2})\]\s*(?:user:\s*|assistant:\s*)?(.*)$")
-WHEN = re.compile(r"^On what date did I first mention that my (.+?) is (.+)\?$")
-ORDER = re.compile(
-    r"^Did I first mention my (.+?) (\S+(?: \S+ Street)?) before or after my (.+?) (\S+(?: \S+ Street)?)\?$"
-)
+# Temporal questions name the slot, never the value, so the question gives no word to match on.
+WHEN = re.compile(r"^On what date did I first mention my current (.+?)\?$")
+ORDER = re.compile(r"^Did I first mention my current (.+?) before or after my current (.+?)\?$")
 
 
 def replay(lines: list[str]) -> tuple[dict[str, str | None], dict[tuple[str, str], str]]:
@@ -134,12 +133,16 @@ def replay(lines: list[str]) -> tuple[dict[str, str | None], dict[tuple[str, str
 def answer(question: str, lines: list[str]) -> str:
     current, first = replay(lines)
     q = question.strip()
+
+    def since(word: str) -> str | None:
+        slot = WORD_SLOT.get(word)
+        value = current.get(slot)
+        return first.get((slot, value)) if value else None
+
     if m := WHEN.match(q):
-        slot = WORD_SLOT.get(m.group(1))
-        return first.get((slot, m.group(2)), "unknown") if current.get(slot) == m.group(2) else "unknown"
+        return since(m.group(1)) or "unknown"
     if m := ORDER.match(q):
-        a = first.get((WORD_SLOT.get(m.group(1)), m.group(2)))
-        b = first.get((WORD_SLOT.get(m.group(3)), m.group(4)))
+        a, b = since(m.group(1)), since(m.group(2))
         if not a or not b or a == b:
             return "unknown"
         return "before" if a < b else "after"

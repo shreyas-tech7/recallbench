@@ -9,7 +9,7 @@ from datetime import date
 from pathlib import Path
 
 from . import __version__
-from .bench import BUDGET, TUNE_SEED, ground_truth_check, run
+from .bench import BUDGET, BUILD_SEEDS, TUNE_SEED, _named, ground_truth_check, run
 from .generator import generate
 from .questions import TYPES, build
 from .readme import RECORD, write
@@ -46,8 +46,12 @@ def cmd_truth(a) -> int:
 
 
 def cmd_run(a) -> int:
-    if a.seed == TUNE_SEED and "final" in a.out:
-        print("refusing: the tuning seed cannot produce final numbers", file=sys.stderr)
+    name = Path(a.out).name.lower()
+    if a.seed in BUILD_SEEDS and ("final" in name or "second" in name):
+        print(
+            f"refusing: seed {a.seed} was used while building, so it cannot produce final numbers",
+            file=sys.stderr,
+        )
         return 2
     res = run(a.seed, a.budget, _embedder(a.embedder), sweep=not a.no_sweep, n_personas=a.personas)
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
@@ -86,7 +90,7 @@ def cmd_demo(a) -> int:
         for s in p.sessions:
             strat.ingest(s)
         lines = strat.retrieve(q.text, q.date)
-        leaked = [ln for ln in lines if any(v in ln for v in q.deleted_values)]
+        leaked = [ln for ln in lines if _named(q.deleted_values, [ln])]
         print(f"  {name:16} returns {len(lines):3} lines, {len(leaked)} name a deleted value: {leaked[:1]}")
     return 0
 

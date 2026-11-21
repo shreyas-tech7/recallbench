@@ -30,7 +30,7 @@ Branch: `claude/project-thread-00glbp`.
 11. **Dense recall:** on a machine that reaches huggingface.co, run:
     ```bash
     uv pip install --python .venv/bin/python -e ".[dense]"
-    .venv/bin/recallbench run --seed 2027 --embedder fastembed --out results/dense-seed2027.json
+    .venv/bin/recallbench run --seed 4049 --embedder fastembed --out results/dense-seed4049.json
     ```
     The README does not show this file yet. Add a block for it if the numbers matter.
 12. **Decide whether `docs/build/BUILD_PROMPT.md` stays public.** It is the full build brief.

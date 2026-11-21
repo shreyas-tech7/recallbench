@@ -20,3 +20,14 @@
 ## Bugs found
 - Wilson interval at k == n put the upper bound a hair under the rate (float rounding). Frequency 2 times severity 3 = 6. Fixed by clamping. Live bug.
 - Reader read "Forget my hobby, please." as a hobby named "please". Frequency 3 times severity 4 = 12. Fixed by trying forget patterns first. Live bug, found by the ground truth replay.
+- Full context spent about 44% of its budget on assistant filler and could skip a newer turn to fit an older one. Frequency 5 times severity 4 = 20. Fixed: user turns only, no gaps. Found by the code review subagent.
+- Vector recall and hybrid were capped at 10 chunks, so the budget sweep did nothing for them. Frequency 5 times severity 3 = 15. Fixed: fill the budget by score. Found by the code review subagent.
+- Temporal questions held the value, a free word for vector recall to match. Frequency 4 times severity 3 = 12. Fixed: questions name the fact only. Found by the code review subagent.
+- Forget violations checked only the slot asked about. Frequency 5 times severity 4 = 20. Fixed: every forgotten value of the persona, on every question, with a new "any question" column. Found by the outside check subagent.
+- The build-seed guard only caught seed 1 with a lowercase "final" in the path. Frequency 2 times severity 3 = 6. Fixed: seeds 1 to 3, "final" or "second", any case.
+- CI skipped `readme --check` when only docs/DECISION_GUIDE.md or docs/INTERVIEW_QA.md changed. Frequency 2 times severity 2 = 4. Fixed in the path filter.
+
+## Not fixed (logged)
+- The extractor and the reader only know the generator's exact phrasing. A capitalized "Delete my address" would not register. Said in the README limits. Fixing it means a less exact reader, which would blur what the benchmark isolates.
+- Wilson intervals assume independent questions. About 13 questions share one persona. Said in the README limits. A cluster bootstrap would be the fix.
+- No test sets a slot again after a forget. The generator never does it, so the benchmark does not measure it.
