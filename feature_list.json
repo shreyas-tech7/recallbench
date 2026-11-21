@@ -1,0 +1,177 @@
+[
+ {
+  "id": "F01",
+  "area": "setup",
+  "description": "init.sh builds .venv, lints, checks links and runs every test offline",
+  "steps": [
+   "./init.sh"
+  ],
+  "passes": true
+ },
+ {
+  "id": "F02",
+  "area": "generator",
+  "description": "Seeded generator: 20 personas, 10 to 30 sessions each, facts set, updated, deleted, passing mentions, distractors, timeline per fact",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_generator.py"
+  ],
+  "passes": true
+ },
+ {
+  "id": "F03",
+  "area": "questions",
+  "description": "Questions in six types with exact answers from the timeline",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_generator.py::test_all_six_question_types"
+  ],
+  "passes": true
+ },
+ {
+  "id": "F04",
+  "area": "truth",
+  "description": "A test replays every timeline and answers every question exactly (Done means 2)",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_truth.py",
+   ".venv/bin/recallbench truth --seed 1"
+  ],
+  "passes": true
+ },
+ {
+  "id": "F05",
+  "area": "reader",
+  "description": "Deterministic reader answers from returned lines, ignores other people, applies forget requests",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_reader.py"
+  ],
+  "passes": true
+ },
+ {
+  "id": "F06",
+  "area": "strategies",
+  "description": "Full context and structured profile store under the same token budget",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_strategies.py::test_every_strategy_keeps_to_the_budget"
+  ],
+  "passes": true
+ },
+ {
+  "id": "F07",
+  "area": "forgetting",
+  "description": "Test proves the profile store never returns a deleted fact, and the benchmark reports forget violations for every strategy (Done means 4)",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_strategies.py -k 'deleted or broken'"
+  ],
+  "passes": true
+ },
+ {
+  "id": "F08",
+  "area": "strategies",
+  "description": "Vector recall over user-turn chunks with the hash embedder",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_strategies.py::test_vector_recall_keeps_deleted_facts"
+  ],
+  "passes": true
+ },
+ {
+  "id": "F09",
+  "area": "strategies",
+  "description": "Vector recall with a small FastEmbed model",
+  "steps": [
+   "recallbench run --embedder fastembed --seed 3 --personas 3 --no-sweep --out /tmp/fe.json"
+  ],
+  "passes": false
+ },
+ {
+  "id": "F10",
+  "area": "strategies",
+  "description": "Rolling summary with the scripted summarizer, and the hybrid of profile store and vector recall",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_strategies.py::test_hybrid_drops_deleted_values_from_its_index"
+  ],
+  "passes": true
+ },
+ {
+  "id": "F11",
+  "area": "guard",
+  "description": "Strategies never see questions during ingestion",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_strategies.py::test_strategies_never_see_questions_during_ingestion"
+  ],
+  "passes": true
+ },
+ {
+  "id": "F12",
+  "area": "metrics",
+  "description": "Accuracy per type with Wilson intervals, stale-fact rate, forget violations, abstention accuracy, tokens per answer",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_metrics.py"
+  ],
+  "passes": true
+ },
+ {
+  "id": "F13",
+  "area": "report",
+  "description": "README table, decision guide and results page generated from results files, with a sync test (Done means 3)",
+  "steps": [
+   ".venv/bin/recallbench readme --check",
+   ".venv/bin/python -m pytest tests/test_repo.py::test_generated_files_match_results"
+  ],
+  "passes": false
+ },
+ {
+  "id": "F14",
+  "area": "final",
+  "description": "Final numbers from seed 2027, never used while building, plus a second seed (Done means 6)",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_repo.py::test_results_meet_the_brief"
+  ],
+  "passes": false
+ },
+ {
+  "id": "F15",
+  "area": "record",
+  "description": "Record-mode run with an LLM summarizer or reader on a free provider for 3 personas, or the README says it could not run (Done means 5)",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_llm.py",
+   "grep -q 'Record mode did not run' README.md"
+  ],
+  "passes": false
+ },
+ {
+  "id": "F16",
+  "area": "quality",
+  "description": "README parts in order, CI with badge, LICENSE, CHANGELOG, CONTRIBUTING, issue templates, topics, social preview, static demo page, DEMO transcript, link check",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_repo.py"
+  ],
+  "passes": false
+ },
+ {
+  "id": "F17",
+  "area": "study",
+  "description": "WALKTHROUGH, INTERVIEW_QA with about 15 questions, DECISIONS",
+  "steps": [
+   ".venv/bin/python -m pytest tests/test_repo.py::test_interview_qa_has_about_fifteen_questions"
+  ],
+  "passes": false
+ },
+ {
+  "id": "F18",
+  "area": "release",
+  "description": "Release check: review, gitleaks, pip-audit, ruff S, actionlint, link check, outside check (Done means 7)",
+  "steps": [
+   "cat docs/RELEASE_CHECK.md"
+  ],
+  "passes": false
+ },
+ {
+  "id": "F19",
+  "area": "handoff",
+  "description": "CHANGELOG v0.1.0-rc1 with SHA, HUMAN_STEPS, COWORK_PROMPT, GITHUB_ABOUT, topics",
+  "steps": [
+   "grep -q 'v0.1.0-rc1' CHANGELOG.md",
+   "test -f docs/handoff/COWORK_PROMPT.md"
+  ],
+  "passes": false
+ }
+]
