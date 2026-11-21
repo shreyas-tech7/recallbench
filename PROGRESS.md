@@ -8,8 +8,11 @@
 - F09 dense recall: FastEmbed model download blocked. Hash embedder used.
 - F15 record mode: no key, provider hosts blocked. README says record mode did not run.
 
+## Done also
+- F19 hand-off: release SHA ee19440 recorded in CHANGELOG.md and docs/HUMAN_STEPS.md.
+
 ## Next
-- F19 hand-off: release SHA in CHANGELOG and HUMAN_STEPS, bundle, report, queue row.
+- Bundle, report and queue row (outside the repo). Then the coordinator opens the PR.
 
 ## Last ./init.sh
 - 2026-11-21: all checks passed, 85 tests.

@@ -2,7 +2,7 @@
 
 ## v0.1.0-rc1 (2026-11-21)
 
-Release commit: recorded in the next commit, see the line below once it is filled in.
+Release commit: `ee194409745836a1727b38af72a64aca28ff41d0` on branch `claude/project-thread-00glbp`.
 
 - Seeded generator of 20 synthetic personas with 10 to 30 sessions each. Facts are set, updated, deleted and mentioned in passing, with near-miss lines about other people.
 - Six question types with exact answers and a test that replays every transcript and answers every question.
