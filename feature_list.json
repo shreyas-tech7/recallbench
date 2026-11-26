@@ -167,10 +167,10 @@
  {
   "id": "F19",
   "area": "handoff",
-  "description": "CHANGELOG v0.1.0-rc1 with SHA, HUMAN_STEPS, COWORK_PROMPT, GITHUB_ABOUT, topics",
+  "description": "CHANGELOG v0.1.0-rc1 with SHA, HUMAN_STEPS, GITHUB_ABOUT, topics. The agent hand-off prompt was removed before the public release.",
   "steps": [
    "grep -q 'v0.1.0-rc1' CHANGELOG.md",
-   "test -f docs/handoff/COWORK_PROMPT.md"
+   "test -f docs/HUMAN_STEPS.md"
   ],
   "passes": true
  }

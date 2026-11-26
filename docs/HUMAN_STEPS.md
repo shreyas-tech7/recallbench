@@ -14,7 +14,7 @@ Branch: `claude/project-thread-00glbp`.
    ```
    Or create a pre-release with that tag on the GitHub Releases page.
 3. **Run the secret scan once more:** `gitleaks git -v .` in a fresh clone.
-4. **Make the repo public** in Settings, General, Danger Zone. All history becomes public at that moment.
+4. **Make the repo public.** Done 2026-11-26: the repo is public.
 5. **Pages:** not needed. `docs/index.html` opens from disk. Turn on Pages from `/docs` on `main` only if you want a hosted copy.
 6. **Social preview:** upload `docs/social-preview.png` in Settings, General, Social preview.
 7. **About box and topics:** paste the description from `docs/GITHUB_ABOUT.md` and the topics from `docs/topics.txt`, if they are not set yet.
