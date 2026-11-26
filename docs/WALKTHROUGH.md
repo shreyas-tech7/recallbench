@@ -42,7 +42,6 @@ The generator invents users and their chats. Each memory strategy reads the chat
 - `docs/index.html` shows the tables as a page.
 - `docs/DEMO.md` is a real terminal run.
 - `docs/HUMAN_STEPS.md` lists what only Shreyas can do.
-- `docs/handoff/COWORK_PROMPT.md` is a prompt for the browser steps.
 - `docs/build/BUILD_PROMPT.md` is the brief this repo was built from.
 - `examples/` holds two users and their questions as JSONL.
 

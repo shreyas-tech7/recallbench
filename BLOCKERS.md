@@ -3,7 +3,7 @@
 ## Skill installs (2026-11-21)
 - What: `npx -y skills add DietrichGebert/ponytail -g -a claude-code -y` (and the other toolkit installs).
 - Error: the permission system denied the call ("Permission for this action was denied by the Claude Code auto mode classifier").
-- Instead: used the superpowers skills already in the session. Followed Ponytail's idea (least code, no extra layers) by hand. No caveman. Logged in docs/TOOLING.md.
+- Instead: used the superpowers skills already in the session. Followed Ponytail's idea (least code, no extra layers) by hand. No caveman.
 
 ## FastEmbed model download (2026-11-21)
 - What: `TextEmbedding("BAAI/bge-small-en-v1.5")` with a 3-document embed.

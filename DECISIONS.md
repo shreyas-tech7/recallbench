@@ -4,7 +4,7 @@ One line per choice: what, the options weighed, and why.
 
 - 2026-11-21 Name: `recallbench`. PyPI and npm both answered 404 for `recallbench` on 2026-11-21. The brief checked the backups `memgauge` and `forgetbench` on 2026-11-20 and found no well-known project. Kept the first free name, which matches the repo.
 - 2026-11-21 Branch: `claude/project-thread-00glbp`, not `claude/build-recallbench`. The session only allows pushes to that branch (coordinator rule 11).
-- 2026-11-21 Working copy: `/home/user/recallbench`, the clone the session already had, instead of `~/work/recallbench`. Same origin, less setup.
+- 2026-11-21 Working copy: the clone the build session already had, instead of a fresh one. Same origin, less setup.
 - 2026-11-21 Token budget: 512 tokens per answer for every strategy, with a sweep at 128, 256, 512 and 1024. A persona transcript runs about 1,500 to 3,900 tokens, so 512 forces a real choice while still fitting a profile.
 - 2026-11-21 Token counter: words plus punctuation marks by regex. Options were tiktoken (download), a model tokenizer (blocked host) or a regex. The regex is offline and the same for every strategy, which is what the comparison needs.
 - 2026-11-21 Question date: the day after a persona's last session, for every question. Mid-timeline questions would need state snapshots and add little to the six types.
